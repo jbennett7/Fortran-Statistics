@@ -7,7 +7,9 @@ module mod_stat
         rms,      &
         std_dev,  &
         std_unit, &
-        corr
+        corr,     &
+        bin,      &
+        summary
 
     interface mean
         module procedure :: mean_int
@@ -32,8 +34,13 @@ module mod_stat
 
     interface corr
         module procedure :: corr_int
-        !module procedure :: corr_real
+        module procedure :: corr_real
     end interface corr
+
+    interface bin
+        module procedure :: bin_int
+        module procedure :: bin_real
+    end interface bin
 
 contains
 
@@ -75,25 +82,45 @@ contains
     pure real function std_unit_int(x, p) result(res)
         integer, intent(in) :: x(:)
         integer, intent(in) :: p
-        res = abs(p - mean(x)) / std_dev(x)
+        res = (p - mean(x)) / std_dev(x)
     end function std_unit_int
 
     pure real function std_unit_real(x, p) result(res)
         real, intent(in) :: x(:)
         real, intent(in) :: p
-        res = abs(p - mean(x)) / std_dev(x)
+        res = (p - mean(x)) / std_dev(x)
     end function std_unit_real
 
-   pure real function corr_int(x, y) result(res)
-       integer, intent(in) :: x(:), y(:)
-       res = mean((abs(x - mean(x)) / std_dev(x))*&
-                  (abs(y - mean(y) / std_dev(y))))
-   end function corr_int
+    pure real function corr_int(x, y) result(res)
+        integer, intent(in) :: x(:), y(:)
+        res = mean(((x - mean(x)) / std_dev(x))*&
+                   ((y - mean(y)) / std_dev(y)))
+    end function corr_int
+ 
+    pure real function corr_real(x, y) result(res)
+        real, intent(in) :: x(:), y(:)
+        res = mean(((x - mean(x)) / std_dev(x))*&
+                   ((y - mean(y)) / std_dev(y)))
+    end function corr_real
 
-   pure real function corr_real(x, y) result(res)
-       real, intent(in) :: x(:), y(:)
-       res = mean((abs(x - mean(x)) / std_dev(x))*&
-                  (abs(y - mean(y)) / std_dev(y)))
-   end function corr_real
+    subroutine bin_int(x, low, high, output)
+        integer, intent(in) :: x(:), low, high
+        integer, allocatable, intent(out) :: output(:)
+        logical, allocatable :: mask(:)
+        allocate(mask(size(x)))
+        mask = (x >= low) .and. (x < high)
+        output = pack(x, mask)
+        deallocate(mask)
+    end subroutine bin_int
+
+    subroutine bin_real(x, low, high, output)
+        real, intent(in) :: x(:), low, high
+        real, allocatable, intent(out) :: output(:)
+        logical, allocatable :: mask(:)
+        allocate(mask(size(x)))
+        mask = (x >= low) .and. (x < high)
+        output = pack(x, mask)
+        deallocate(mask)
+    end subroutine bin_real
 
 end module mod_stat

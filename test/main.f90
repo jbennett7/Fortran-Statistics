@@ -5,6 +5,9 @@ program main
     use test_rms, only : collect_rms
     use test_std_dev, only : collect_std_dev
     use test_std_unit, only : collect_std_unit
+    use test_corr, only : collect_corr
+    use test_bin, only : collect_bin
+    use test_denan, only : collect_denan
     implicit none
     integer :: stat, is
     type(testsuite_type), allocatable :: testsuites(:)
@@ -16,7 +19,10 @@ program main
         new_testsuite("mean", collect_mean),&
         new_testsuite("rms", collect_rms),&
         new_testsuite("std_dev", collect_std_dev),&
-        new_testsuite("std_unit", collect_std_unit) &
+        new_testsuite("std_unit", collect_std_unit),&
+        new_testsuite("corr", collect_corr),&
+        new_testsuite("bin", collect_bin),&
+        new_testsuite("denan", collect_denan) &
         ]
 
     do is = 1, size(testsuites)

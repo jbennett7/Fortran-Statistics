@@ -1,7 +1,7 @@
 module test_std_unit
     use testdrive, only : new_unittest, unittest_type, error_type, check
     use mod_data_io, only : read_women18ht, read_pearson
-    use mod_stat, only : std_unit
+    use mod_stat, only : std_unit, mean, std_dev
     implicit none
     private
     public :: collect_std_unit
@@ -21,7 +21,8 @@ contains
         type(error_type), allocatable, intent(out) :: error
         real, allocatable :: data(:)
         call read_women18ht(data)
-        print *, std_unit(data, 50.00)
+        call check(error, nint(std_unit(data, mean(data) + std_dev(data))*10.0) / 10.0 == 1.0)
+        call check(error, nint(std_unit(data, mean(data) + 2*std_dev(data))*10.0) / 10.0 == 2.0)
 
         if(allocated(data)) deallocate(data)
     end subroutine test_std_unit1
@@ -30,8 +31,7 @@ contains
         type(error_type), allocatable, intent(out) :: error
         real, allocatable :: data(:,:)
         call read_pearson(data)
-        print *, std_unit(data(:,1), 63.0)
-        print *, std_unit(data(:,2), 63.0)
+        call check(error, std_unit(data(:,1), mean(data(:,1)) + std_dev(data(:,1))) == 1.0)
         if(allocated(data)) deallocate(data)
     end subroutine test_std_unit2
 
